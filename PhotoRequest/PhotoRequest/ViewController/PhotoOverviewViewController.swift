@@ -10,11 +10,16 @@ import UIKit
 
 class PhotoOverviewController: UIViewController {
   
+  @IBOutlet weak var activityIndicator: UIActivityIndicatorView!
   @IBOutlet weak var tableView: UITableView!
-
+  
   let photos = PhotoList()
   let photoDetailVc = ImagePopoverViewController()
-
+  
+  override func viewWillAppear(_ animated: Bool) {
+     presentActivityIndicator()
+  }
+  
   override func viewDidLoad() {
     super.viewDidLoad()
     
@@ -50,6 +55,7 @@ class PhotoOverviewController: UIViewController {
     })
     DispatchQueue.main.async {
       self.tableView.reloadData()
+      self.hideActivityIndicator()
     }
   }
 }
@@ -85,13 +91,32 @@ extension PhotoOverviewController: UITableViewDataSource, UITableViewDelegate  {
         
         self.photoDetailVc.modalPresentationStyle = UIModalPresentationStyle.overCurrentContext
         self.passPhotoData(data: image)
-        self.present(self.photoDetailVc, animated: true)
+        DispatchQueue.main.async {
+          self.presentActivityIndicator()
+        }
+        self.present(self.photoDetailVc, animated: true, completion: {
+          DispatchQueue.main.async {
+            self.hideActivityIndicator()
+          }
+        })
         
       case .failure(let failure):
         print(failure)
       }
     }
   }
+  
+  func presentActivityIndicator() {
+    self.activityIndicator.isHidden = false
+    self.tableView.isHidden = true
+  }
+  
+  func hideActivityIndicator() {
+    self.activityIndicator.isHidden = true
+    self.tableView.isHidden = false
+  }
+  
+  
 }
 
 extension PhotoOverviewController: PhotoDelegate {
@@ -104,5 +129,5 @@ extension PhotoOverviewController: PhotoDelegate {
     photoDetailVc.imageData = data
   }
   
-
+  
 }
