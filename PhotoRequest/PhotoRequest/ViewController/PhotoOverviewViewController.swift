@@ -84,6 +84,8 @@ extension PhotoOverviewController: UITableViewDataSource, UITableViewDelegate  {
   func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
     
     let urlString = NSString(string: photos.photos?[indexPath.row].url ?? "")
+    presentActivityIndicator()
+    
     API.photoItem(urlString.lastPathComponent).makeRequest { (result) in
       switch result {
       case .success(let image):
@@ -92,16 +94,16 @@ extension PhotoOverviewController: UITableViewDataSource, UITableViewDelegate  {
         self.photoDetailVc.modalPresentationStyle = UIModalPresentationStyle.overCurrentContext
         self.passPhotoData(data: image)
         DispatchQueue.main.async {
-          self.presentActivityIndicator()
-        }
-        self.present(self.photoDetailVc, animated: true, completion: {
-          DispatchQueue.main.async {
+          self.present(self.photoDetailVc, animated: true, completion: {
             self.hideActivityIndicator()
-          }
-        })
+          })
+        }
         
       case .failure(let failure):
         print(failure)
+        DispatchQueue.main.async {
+          self.hideActivityIndicator()
+        }
       }
     }
   }
